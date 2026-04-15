@@ -4,11 +4,6 @@ const jwt = require('jsonwebtoken');
 
 require('dotenv').config();
 
-/**
- * Menghitung Basal Metabolic Rate (BMR) berdasarkan Rumus Mifflin-St Jeor.
- * Rumus Laki-laki : (10 × berat) + (6.25 × tinggi) - (5 × usia) + 5
- * Rumus Perempuan : (10 × berat) + (6.25 × tinggi) - (5 × usia) - 161
- */
 const calculateBMR = (berat, tinggi, usia, gender) => {
     const bb = parseFloat(berat);
     const tb = parseFloat(tinggi);
@@ -22,18 +17,6 @@ const calculateBMR = (berat, tinggi, usia, gender) => {
     return 0;
 };
 
-/**
- * Menghitung target kalori harian berdasarkan BMR, tujuan, dan kecepatan.
- * 
- * TDEE (Total Daily Energy Expenditure) = BMR × 1.2 (asumsi sedentary/aktivitas ringan)
- * 1 kg lemak tubuh ≈ 7700 kalori
- * Defisit/surplus harian = (kecepatan_kg_per_minggu × 7700) / 7
- * 
- * Contoh:
- *   - Perlahan  (0.25 kg/minggu) → ±275 kal/hari
- *   - Normal    (0.5  kg/minggu) → ±550 kal/hari
- *   - Cepat     (1    kg/minggu) → ±1100 kal/hari
- */
 const calculateTargetKalori = (berat, tinggi, usia, gender, tujuan, kecepatan) => {
     const bmr = calculateBMR(berat, tinggi, usia, gender);
     const tdee = bmr * 1.2; // Sedentary activity multiplier
@@ -45,15 +28,13 @@ const calculateTargetKalori = (berat, tinggi, usia, gender, tujuan, kecepatan) =
     } else if (tujuan === 'menaikkan berat badan') {
         return Math.round(tdee + dailyAdjustment);
     }
-    return Math.round(tdee); // fallback
+    return Math.round(tdee);
 };
 
-// Endpoint Register
 exports.register = async (req, res) => {
     try {
         const { nama, email, password, berat_badan, tinggi_badan, usia, gender, target_berat, tujuan, kecepatan } = req.body;
 
-        // Validasi field input kosong
         if (!nama || !email || !password || !berat_badan || !tinggi_badan || !usia || !gender || !target_berat) {
             return res.status(400).json({ message: 'Semua field wajib diisi' });
         }
@@ -98,7 +79,8 @@ exports.register = async (req, res) => {
                 id: result.insertId,
                 nama,
                 email,
-                target_kalori
+                target_kalori,
+                avatar: null
             }
         });
 
@@ -146,7 +128,8 @@ exports.login = async (req, res) => {
                 id: user.id,
                 nama: user.nama,
                 email: user.email,
-                target_kalori: user.target_kalori
+                target_kalori: user.target_kalori,
+                avatar: user.avatar ? `http://localhost:5000${user.avatar}` : null
             }
         });
 

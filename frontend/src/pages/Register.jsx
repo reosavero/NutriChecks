@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -163,7 +163,7 @@ export default function Register() {
     'w-full px-4 py-3.5 rounded-xl bg-slate-800/60 border border-slate-600/80 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 focus:outline-none transition-all text-white placeholder-slate-500 text-base';
 
   // ─── Progress Bar ──────────────────────────────────────
-  const ProgressBar = () => (
+  const renderProgressBar = useMemo(() => (
     <div className="flex items-center justify-center mb-10">
       {STEP_META.map((s, i) => (
         <div key={s.num} className="flex items-center">
@@ -197,7 +197,7 @@ export default function Register() {
         </div>
       ))}
     </div>
-  );
+  ), [step]);
 
   // ─── Option Card Component ─────────────────────────────
   const OptionCard = ({ field, value, icon: Icon, title, subtitle, selected }) => (
@@ -243,7 +243,7 @@ export default function Register() {
   );
 
   // ─── Left Panel ────────────────────────────────────────
-  const LeftPanel = () => {
+  const renderLeftPanel = React.useMemo(() => {
     const data = LEFT_PANEL_DATA[step];
     const PanelIcon = data.icon;
     return (
@@ -295,7 +295,7 @@ export default function Register() {
         </div>
       </div>
     );
-  };
+  }, [step, animDir]);
 
   // ─── Render Steps ──────────────────────────────────────
   const renderStep = () => {
@@ -500,7 +500,7 @@ export default function Register() {
     <div className="flex h-screen overflow-hidden bg-slate-950 text-white font-sans">
 
       {/* ═══ Left Panel (Desktop only) ═══ */}
-      <LeftPanel />
+      {renderLeftPanel}
 
       {/* ═══ Right Panel (Form area) ═══ */}
       <main className="flex-1 overflow-y-auto relative flex flex-col">
@@ -510,7 +510,7 @@ export default function Register() {
         {/* Content wrapper — vertically centered */}
         <div className="flex-1 flex flex-col justify-center relative z-10 px-6 md:px-12 lg:px-16 xl:px-20 py-8">
           {/* Progress bar */}
-          <ProgressBar />
+          {renderProgressBar}
 
           {/* Error */}
           {error && (

@@ -7,12 +7,13 @@ import Report from './pages/Report';
 import LogFood from './pages/LogFood';
 import FoodMenu from './pages/FoodMenu';
 import Recommendations from './pages/Recommendations';
+import WeightHistory from './pages/WeightHistory';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -21,6 +22,7 @@ function App() {
         <Route path="/report" element={<Report />} />
         <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/upload-food" element={<UploadFood />} />
+        <Route path="/weight-history" element={<WeightHistory />} />
       </Routes>
     </BrowserRouter>
   );

@@ -5,6 +5,57 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faLock } from '@fortawesome/free-solid-svg-icons';
 import { Leaf, ShieldCheck, Check } from 'lucide-react';
 
+const LeftPanel = () => {
+  return (
+    <div className="hidden lg:flex lg:w-[42%] xl:w-[38%] bg-gradient-to-br from-emerald-900/40 via-slate-900 to-slate-950 flex-col justify-center items-center p-10 xl:p-14 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-32 -right-20 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-emerald-400/3 rounded-full blur-2xl"></div>
+      </div>
+
+      {/* Branding */}
+      <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-12">
+          <div className="bg-emerald-500/20 p-2.5 rounded-xl border border-emerald-500/30">
+            <Leaf className="w-7 h-7 text-emerald-400" />
+          </div>
+          <span className="text-2xl font-bold tracking-tight">NutriCheck</span>
+        </div>
+
+        {/* Info card */}
+        <div className="w-full">
+          <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/40 rounded-2xl p-8 mb-8">
+            <div className="bg-emerald-500/15 p-4 rounded-2xl w-fit mx-auto mb-5 border border-emerald-500/20">
+              <ShieldCheck className="w-10 h-10 text-emerald-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">Selamat Datang</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">Masuk untuk melanjutkan perjalanan kesehatan Anda dan pantau nutrisi harian secara teratur.</p>
+          </div>
+
+          {/* Feature list */}
+          <div className="space-y-3">
+            {[
+              'Akses rencana kalori Anda',
+              'Pantau progres berat badan',
+              'Data pribadi aman terenkripsi'
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <div className="bg-emerald-500/20 p-1 rounded-full flex-shrink-0">
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <span className="text-slate-300">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,56 +87,7 @@ export default function Login() {
     }
   };
 
-  const LeftPanel = () => {
-    return (
-      <div className="hidden lg:flex lg:w-[42%] xl:w-[38%] bg-gradient-to-br from-emerald-900/40 via-slate-900 to-slate-950 flex-col justify-center items-center p-10 xl:p-14 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-          <div className="absolute -top-20 -left-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-32 -right-20 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-emerald-400/3 rounded-full blur-2xl"></div>
-        </div>
 
-        {/* Branding */}
-        <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-12">
-            <div className="bg-emerald-500/20 p-2.5 rounded-xl border border-emerald-500/30">
-              <Leaf className="w-7 h-7 text-emerald-400" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight">NutriCheck</span>
-          </div>
-
-          {/* Info card */}
-          <div className="w-full">
-            <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/40 rounded-2xl p-8 mb-8">
-              <div className="bg-emerald-500/15 p-4 rounded-2xl w-fit mx-auto mb-5 border border-emerald-500/20">
-                <ShieldCheck className="w-10 h-10 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Selamat Datang Kembali</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Masuk untuk melanjutkan perjalanan kesehatan Anda dan pantau nutrisi harian secara teratur.</p>
-            </div>
-
-            {/* Feature list */}
-            <div className="space-y-3">
-              {[
-                'Akses rencana kalori Anda',
-                'Pantau progres berat badan',
-                'Data pribadi aman terenkripsi'
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm">
-                  <div className="bg-emerald-500/20 p-1 rounded-full flex-shrink-0">
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  </div>
-                  <span className="text-slate-300">{feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-950 text-white font-sans">

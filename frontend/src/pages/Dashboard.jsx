@@ -35,20 +35,28 @@ export default function Dashboard() {
     fetchDashboard();
   }, [navigate]);
 
+
+
   if (loading || !data) {
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
-        <p className="font-bold text-center flex flex-col items-center">
-            <span className="w-8 h-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin mb-4"></span>
-            Loading Data...
-        </p>
+      <div className="flex h-screen overflow-hidden bg-slate-950 text-white font-sans">
+        
+        {/* Sidebar dipaksa tetap muncul (dengan data sekadarnya / guest state) */}
+        <Sidebar activePage="dashboard" user={storedUser} />
+
+        <main className="flex-1 overflow-y-auto bg-slate-950 flex h-full items-center justify-center relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-slate-950 to-emerald-900/10 pointer-events-none"></div>
+          <p className="font-bold text-center flex flex-col items-center text-slate-300 relative z-10">
+              <span className="w-8 h-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin mb-4"></span>
+              Loading Data...
+          </p>
+        </main>
       </div>
     );
   }
 
   const { planning, calories, weightProgress, macros } = data;
-
-  // Setup Visualisasi Grafik (Chart.js)
   const chartData = {
     labels: weightProgress.labels,
     datasets: [
@@ -109,7 +117,7 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-hidden bg-slate-950 text-white font-sans">
       
       {/* Sidebar Komponen Reusable */}
-      <Sidebar activePage="dashboard" user={data.user} />
+      <Sidebar activePage="dashboard" user={data?.user || JSON.parse(localStorage.getItem('user') || 'null')} />
 
       {/* Box Konten Flex */}
       <main className="flex-1 overflow-y-auto bg-slate-950 p-6 md:p-10 relative">
@@ -158,7 +166,10 @@ export default function Dashboard() {
                   <span className="text-4xl font-extrabold text-blue-500">{calories.target}</span>
                   <span className="text-slate-400 ml-2 font-medium">Kcal</span>
                 </div>
-                <span className="text-emerald-400/90 bg-emerald-500/10 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-500/30">
+                <span 
+                  className="text-emerald-400/90 bg-emerald-500/10 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-500/30 cursor-help"
+                  title="BMR (Basal Metabolic Rate): Jumlah kalori minimal yang dibakar oleh tubuhmu untuk fungsi dasar (seperti bernapas dan detak jantung) saat kamu sedang rebahan atau istirahat total."
+                >
                   BMR: {calories.bmr} Kcal
                 </span>
               </div>
@@ -226,7 +237,6 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

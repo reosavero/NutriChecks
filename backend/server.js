@@ -5,6 +5,8 @@ const cors = require('cors');
 const authRoutes = require('./src/routes/authRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const foodRoutes = require('./src/routes/foodRoutes');
+const userRoutes = require('./src/routes/userRoutes');
+const path = require('path');
 
 const app = express();
 
@@ -12,10 +14,14 @@ const app = express();
 app.use(cors());                 // Mengizinkan komunikasi lintas domain (dari frontend ke backend)
 app.use(express.json());         // Agar server dapat membaca Request Body berformat JSON
 
+// Serve foldel static untuk file upload
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 // Menggunakan Routes API
 app.use('/api', authRoutes);
 app.use('/api', dashboardRoutes);
 app.use('/api', foodRoutes);
+app.use('/api', userRoutes);
 
 // Endpoint Health Check
 app.get('/', (req, res) => {
