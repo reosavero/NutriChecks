@@ -1,14 +1,12 @@
-import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartPie, faUtensils, faChartLine, faCameraRetro, faSignOutAlt, faList, faLightbulb } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 /**
  * Sidebar reusable untuk seluruh halaman NutriCheck.
- * @param {string} activePage - Halaman yang sedang aktif ('dashboard' | 'log' | 'upload' | null)
  * @param {object|null} user - Data user dari localStorage/API (null = belum login)
  */
-export default function Sidebar({ activePage = null, user = null }) {
+export default function Sidebar({ user = null }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -16,75 +14,118 @@ export default function Sidebar({ activePage = null, user = null }) {
     navigate('/login');
   };
 
-  // Data profil default jika user belum login
   const profileName = user?.nama || 'Guest';
-  const profileNrp = user?.nrp || '';
-  const profileAvatar = user?.avatar || `https://ui-avatars.com/api/?name=G&background=334155&color=94a3b8`;
-  const isLoggedIn = !!user;
+  const profileAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${profileName.charAt(0)}&background=006c51&color=ffffff`;
 
   const navItems = [
-    { key: 'dashboard', label: 'Dashboard', icon: faChartPie, path: '/dashboard' },
-    { key: 'menu', label: 'Menu Makanan', icon: faList, path: '/food-menu' },
-    { key: 'log', label: 'Log Makanan', icon: faUtensils, path: '/log-food' },
-    { key: 'report', label: 'Laporan', icon: faChartLine, path: '/report' },
-    { key: 'rekomendasi', label: 'Rekomendasi', icon: faLightbulb, path: '/recommendations' },
-    { key: 'upload', label: 'Upload with AI', icon: faCameraRetro, path: '/upload-food' },
+    { key: 'dashboard', label: 'Bio-Metrics', icon: 'monitoring', path: '/dashboard' },
+    { key: 'upload', label: 'AI Assistant', icon: 'auto_awesome', path: '/upload-food' },
+    { key: 'report', label: 'History', icon: 'history', path: '/report' },
+    { key: 'menu', label: 'Meal Log', icon: 'restaurant', path: '/food-menu' },
+    { key: 'community', label: 'Community', icon: 'groups', path: '/community' },
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-slate-900/80 backdrop-blur-md border-r border-slate-700/50 flex-col justify-between hidden md:flex z-10">
-      <div>
-        {/* Avatar Profile Section */}
-        <div className="p-6 border-b border-slate-700/50 flex items-center space-x-4">
-          <div className="relative">
-            <img
-              src={profileAvatar}
-              alt="Avatar"
-              className="w-12 h-12 rounded-full border-2 border-slate-700 object-cover"
-            />
-            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${isLoggedIn ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
-          </div>
-          <div>
-            <h2 className="font-bold text-slate-100">{profileName}</h2>
-            {profileNrp && <p className="text-xs text-slate-400">{profileNrp}</p>}
-            <p className={`text-xs font-semibold mt-0.5 ${isLoggedIn ? 'text-emerald-500' : 'text-slate-500'}`}>
-              {isLoggedIn ? 'Online' : 'Offline'}
-            </p>
+    <>
+      {/* SideNavBar (Desktop) */}
+      <aside className="hidden lg:flex bg-surface-container-low font-sans antialiased h-screen w-72 fixed left-0 border-r-0 flex-col p-6 space-y-2 z-40 transition-colors">
+        {/* Header */}
+        <div className="mb-8 px-4 mt-4">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm border border-primary/10">
+              <span className="material-symbols-outlined fill">vital_signs</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-on-surface tracking-tight">NutriCheck</h1>
+              <p className="text-xs text-secondary">Premium Wellness</p>
+            </div>
           </div>
         </div>
 
-        {/* Sidebar Navigation */}
-        <nav className="p-4 space-y-2 mt-2">
+        {/* Navigation Tabs */}
+        <nav className="flex-1 space-y-1">
           {navItems.map((item) => {
-            const isActive = activePage === item.key;
+            const isActive = location.pathname === item.path;
             return (
               <button
                 key={item.key}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 tap-highlight-transparent group ${
                   isActive
-                    ? 'bg-emerald-500/10 text-emerald-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-secondary hover:bg-surface-container hover:text-primary transition-colors'
                 }`}
               >
-                <FontAwesomeIcon icon={item.icon} className="w-5" />
-                <span>{item.label}</span>
+                <span className={`material-symbols-outlined mr-3 transition-transform group-hover:scale-110 ${isActive ? 'fill' : ''}`}>
+                  {item.icon}
+                </span>
+                <span className="text-sm">{item.label}</span>
               </button>
             );
           })}
         </nav>
-      </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-slate-700/50 mb-4">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-lg font-medium transition-colors"
-        >
-          <FontAwesomeIcon icon={faSignOutAlt} className="w-5" />
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+        {/* CTA */}
+        <div className="mt-8 mb-4">
+          <button 
+            onClick={() => navigate('/upload-food')}
+            className="w-full py-3 px-4 bg-tertiary text-on-tertiary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-[0_8px_16px_-6px_rgba(164,60,18,0.3)] hover:-translate-y-0.5 transform transition-transform"
+          >
+            <span className="material-symbols-outlined text-[20px]">add_circle</span>
+            <span>Log Critical Meal</span>
+          </button>
+        </div>
+
+        {/* Footer Tabs */}
+        <div className="pt-4 border-t border-outline-variant/10 space-y-1">
+          {/* User Profile Info */}
+          <div className="px-4 mb-4 py-3 bg-surface-container-high/40 rounded-2xl flex items-center gap-3 border border-outline-variant/10">
+            <img 
+              src={profileAvatar} 
+              alt={profileName} 
+              className="w-10 h-10 rounded-full border border-primary/20 object-cover" 
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-black text-on-surface truncate line-clamp-1">{profileName}</p>
+              <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">Active Member</p>
+            </div>
+          </div>
+
+          <button 
+            className="w-full flex items-center px-4 py-3 text-secondary hover:bg-surface-container hover:text-primary transition-colors rounded-xl group"
+          >
+            <span className="material-symbols-outlined mr-3 transition-transform group-hover:scale-110">help</span>
+            <span className="font-medium text-sm">Support</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center px-4 py-3 text-secondary hover:bg-error/10 hover:text-error transition-colors rounded-xl group"
+          >
+            <span className="material-symbols-outlined mr-3 transition-transform group-hover:scale-110">logout</span>
+            <span className="font-medium text-sm">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="lg:hidden fixed bottom-0 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-surface-container-high shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.05)] z-50 px-6 py-4 flex justify-between items-center pb-safe">
+        {navItems.slice(0, 4).map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <button
+              key={item.key}
+              onClick={() => navigate(item.path)}
+              className={`flex flex-col items-center gap-1 transition-all ${isActive ? 'text-primary' : 'text-secondary'}`}
+            >
+              <div className={`${isActive ? 'bg-primary/10 px-4 py-1 rounded-full' : ''}`}>
+                <span className={`material-symbols-outlined text-[24px] ${isActive ? 'fill' : ''}`}>
+                  {item.icon}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </nav>
+    </>
   );
 }

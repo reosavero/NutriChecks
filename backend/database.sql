@@ -12,5 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     gender ENUM('laki-laki', 'perempuan') NOT NULL,
     target_berat FLOAT NOT NULL, -- target berat dalam kilogram (kg)
     target_kalori FLOAT,         -- dihitung secara otomatis (Kkal)
+    tujuan VARCHAR(255) NOT NULL, -- tujuan kesehatan (misal: menurunkan berat badan)
+    kecepatan FLOAT NOT NULL,     -- kecepatan perubahan berat badan (kg/minggu)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

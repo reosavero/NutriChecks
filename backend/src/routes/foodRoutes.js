@@ -8,7 +8,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
     limits: { 
-        fileSize: 5 * 1024 * 1024 // Batasi foto maksimam berukuran 5MB
+        fileSize: 25 * 1024 * 1024 // Batasi foto maksimam berukuran 25MB (untuk foto resolusi tinggi)
     }
 });
 

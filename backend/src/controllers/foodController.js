@@ -28,60 +28,62 @@ exports.analyzeFoodImage = async (req, res) => {
     };
 
     // 4. Inisialisasi Model AI Generatif (Sesuai dengan versi yang tersedia di Google AI Studio)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const modelName = "gemini-1.5-flash";
+    console.log(`Pemicu scan AI menggunakan model: ${modelName}`);
+    
+    const model = genAI.getGenerativeModel({ 
+      model: modelName,
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    });
 
     // 5. Prompt Instruksi Ketat (Strict Instructions) untuk Output JSON Murni
-    const prompt = `Anda adalah seorang ahli nutrisi dan AI penganalisis gambar.
-Tugas Anda adalah mematuhi instruksi secara ketat. Anda HANYA boleh membalas dengan sebuah JSON murni (tanpa dibungkus tag markdown, tanpa tambahan string/kalimat pengantar atau penutup).
+    const prompt = `Anda adalah seorang Lead Clinical Nutritionist AI.
+Tugas Anda adalah membedah gambar makanan secara molekuler dan memberikan data nutrisi yang akurat.
 
-Lihat gambar yang dilampirkan:
+PERINTAH KHUSUS:
+1. Analisis porsi makanan dalam gambar (kecil, sedang, besar) berdasarkan perbandingan objek di sekitarnya.
+2. Identifikasi bahan dasar makanan tersebut.
+3. Jika gambar BUKAN makanan/minuman, set "success": false.
 
-Skenario A - BUKAN MAKANAN:
-Jika gambar di atas BUKAN MAKANAN (misalnya manusia, pemandangan, laptop, struk/kartu, mobil, logo, objek abstrak, dsb):
-Kembalikan persis JSON di bawah ini:
+Struktur Output JSON:
 {
-  "success": false,
-  "message": "Gambar yang diunggah bukan gambar makanan. Silakan unggah foto makanan yang jelas."
-}
-
-Skenario B - ITU ADALAH MAKANAN:
-Jika gambar tersebut adalah makanan minuman yang valid:
-Tebak nama makanan tersebut dan berikan perkiraan kandungan makronutrisi (jumlah kalori, protein, karbohidrat, dan lemak per porsi standar makanan tersebut). Semua angka nutrisi harus berformat "number" (tanpa ekstensi satuan seperti g/kkal).
-Kembalikan persis JSON di bawah ini:
-{
-  "success": true,
+  "success": boolean,
+  "message": string (isi jika success false),
   "data": {
-     "nama_makanan": "Nasi Goreng Ayam",
-     "kalori": 450,
-     "protein": 15.5,
-     "karbohidrat": 50.2,
-     "lemak": 12.0
+     "nama_makanan": string,
+     "porsi": string (misal: "1 porsi sedang (~250g)"),
+     "kalori": number,
+     "protein": number,
+     "karbohidrat": number,
+     "lemak": number,
+     "confidence_score": number (0-1),
+     "analisis_singkat": string (penjelasan singkat tentang nutrisi makanan ini)
   }
-}
-
-INGAT: Kirimkan 1 objek JSON saja dan jangan gunakan format markdown \`\`\`json.`;
+}`;
 
     // 6. Jalankan Proses Analisis AI
     const result = await model.generateContent([prompt, imagePart]);
     const responseText = result.response.text();
 
-    // 7. Sanitasi Hasil (Menghapus markdown atau whitespace kalau AI "bandel" membandelkannya)
-    const jsonString = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
-
     let jsonResponse;
     try {
-      jsonResponse = JSON.parse(jsonString);
+      jsonResponse = JSON.parse(responseText);
     } catch (parseErr) {
       console.error("Gagal melakukan parsing output AI JSON:", responseText);
       return res.status(500).json({ 
         success: false, 
-        message: "AI memberikan output yang tidak dapat dipahami. Mohon coba gambar lain." 
+        message: "AI memberikan output yang tidak sinkron dengan protokol bio-matriks. Mohon coba gambar lain." 
       });
     }
 
-    // 8. Tentukan Respon Akhir Sesuai Skenario Makanan (Benar / Salah) 
+    // 7. Tentukan Respon Akhir Sesuai Skenario Makanan (Benar / Salah) 
     if (jsonResponse.success === false) {
-      return res.status(400).json(jsonResponse); 
+      return res.status(400).json({
+        success: false,
+        message: jsonResponse.message || "Gambar yang diunggah tidak terdeteksi sebagai bahan gizi yang valid."
+      }); 
     }
 
     return res.status(200).json(jsonResponse); // Berhasil
@@ -89,14 +91,21 @@ INGAT: Kirimkan 1 objek JSON saja dan jangan gunakan format markdown \`\`\`json.
   } catch (error) {
     console.error("Error analyzing food image:", error);
     
-    // Penanganan apabila Timeout atau Invalid API Key
+    // Penanganan Rate Limit (API Limit)
+    if (error.status === 429 || (error.message && error.message.includes("429"))) {
+      return res.status(429).json({ 
+        success: false, 
+        message: "Limit API tercapai (Maks 15 scan/menit). Harap tunggu sejenak sebelum melakukan scan berikutnya." 
+      });
+    }
+
     if (error.message && error.message.includes("API key")) {
-      return res.status(500).json({ success: false, message: "Server kehilangan izin API Key Generative AI." });
+      return res.status(500).json({ success: false, message: "Kredensial API Google AI tidak valid atau telah kedaluwarsa." });
     }
 
     return res.status(500).json({
       success: false,
-      message: "Terjadi kesalahan pada server AI saat membedah / menganalisis foto tersebut.",
+      message: "Terjadi gangguan pada sirkuit analisis AI. Mohon pastikan foto cukup terang dan jelas.",
     });
   }
 };

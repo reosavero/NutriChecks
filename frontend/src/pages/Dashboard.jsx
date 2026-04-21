@@ -3,9 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDrumstickBite, faBreadSlice, faCheese } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend);
 
@@ -22,7 +21,7 @@ export default function Dashboard() {
         return;
       }
       try {
-        const res = await axios.get('http://localhost:5000/api/dashboard', {
+        const res = await axios.get('http://localhost:5001/api/dashboard', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(res.data);
@@ -37,30 +36,30 @@ export default function Dashboard() {
 
   if (loading || !data) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
-        <p className="font-bold text-center flex flex-col items-center">
-            <span className="w-8 h-8 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin mb-4"></span>
-            Loading Data...
-        </p>
+      <div className="flex h-screen items-center justify-center bg-background text-on-surface">
+        <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin mb-4"></div>
+            <p className="font-bold text-lg tracking-tight">Synchronizing Biometrics...</p>
+        </div>
       </div>
     );
   }
 
-  const { planning, calories, weightProgress, macros } = data;
+  const { planning, calories, weightProgress, macros, user } = data;
 
-  // Setup Visualisasi Grafik (Chart.js)
+  // Setup Visualisasi Grafik (Chart.js) matching the High-Tech style
   const chartData = {
     labels: weightProgress.labels,
     datasets: [
       {
         label: 'Weight',
         data: weightProgress.data,
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: '#006c51', // primary
+        backgroundColor: 'rgba(0, 108, 81, 0.05)',
         tension: 0.4,
         borderWidth: 3,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#fff',
+        pointBackgroundColor: '#006c51',
+        pointBorderColor: '#ffffff',
         pointBorderWidth: 2,
         pointRadius: 4,
         fill: true,
@@ -68,7 +67,7 @@ export default function Dashboard() {
       {
         label: 'Target',
         data: weightProgress.labels.map(() => weightProgress.targetWeight),
-        borderColor: '#10b981',
+        borderColor: '#a43c12', // tertiary
         borderDash: [5, 5],
         borderWidth: 2,
         pointRadius: 0,
@@ -84,149 +83,186 @@ export default function Dashboard() {
       tooltip: {
         mode: 'index',
         intersect: false,
-        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-        titleColor: '#fff',
-        bodyColor: '#cbd5e1',
-        borderColor: 'rgba(51, 65, 85, 0.5)',
+        backgroundColor: 'rgba(28, 27, 27, 0.9)',
+        titleColor: '#ffffff',
+        bodyColor: '#e5e2e1',
+        borderColor: 'rgba(0, 108, 81, 0.1)',
         borderWidth: 1,
       }
     },
     scales: {
       x: {
         grid: { display: false, drawBorder: false },
-        ticks: { color: '#94a3b8' }
+        ticks: { color: '#5f5e5e', font: { family: 'Inter', size: 10 } }
       },
       y: {
-        suggestedMin: Math.min(...weightProgress.data) - 2,
-        suggestedMax: Math.max(...weightProgress.data, weightProgress.targetWeight) + 2,
-        grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
-        ticks: { color: '#94a3b8' }
+        suggestedMin: Math.min(...weightProgress.data) - 1,
+        suggestedMax: Math.max(...weightProgress.data, weightProgress.targetWeight) + 1,
+        grid: { color: 'rgba(0, 108, 81, 0.05)', drawBorder: false },
+        ticks: { color: '#5f5e5e', font: { family: 'Inter', size: 10 } }
       }
     }
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950 text-white font-sans">
+    <div className="flex h-screen overflow-hidden bg-background text-on-background font-body antialiased">
       
-      {/* Sidebar Komponen Reusable */}
-      <Sidebar activePage="dashboard" user={data.user} />
+      {/* Sidebar Component */}
+      <Sidebar user={user} />
 
-      {/* Box Konten Flex */}
-      <main className="flex-1 overflow-y-auto bg-slate-950 p-6 md:p-10 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/10 via-slate-950 to-emerald-900/10 pointer-events-none"></div>
-        
-        <div className="max-w-6xl mx-auto relative z-10">
-          {/* Dashboard Header Bar */}
-          <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-8 gap-4">
+      {/* Main Content Area */}
+      <main className="flex-1 lg:ml-72 flex flex-col min-h-screen overflow-y-auto pb-24 lg:pb-0">
+        <Header user={user} />
+
+        {/* Dashboard Canvas (Bento Grid Layout) */}
+        <div className="flex-1 p-6 md:p-8 max-w-screen-2xl mx-auto w-full space-y-8">
+          
+          {/* Page Header */}
+          <div className="flex justify-between items-end">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight mb-1">Hello, {data.user.nama.split(' ')[0]}! 👋</h1>
-              <p className="text-sm text-slate-400">Ringkasan kemajuan rencana nutrisi dan berat badanmu hari ini.</p>
+              <h2 className="text-display-md text-on-surface font-headline mb-1">Today's Vitality</h2>
+              <p className="text-on-surface-variant text-base">Welcome back, {user.nama.split(' ')[0]}. Your biometrics are trending towards optimal.</p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-              {/* Tombol Fungsionil Header */}
-              <button onClick={() => navigate('/upload-food')} className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-blue-500/20 whitespace-nowrap">
-                Lacak Makanan Baru (AI/Manual)
-              </button>
-              <button className="px-5 py-2.5 border border-slate-600 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 rounded-lg font-semibold text-sm transition-colors backdrop-blur-sm whitespace-nowrap">
-                Catat Berat Badan Terbaru
-              </button>
-            </div>
-          </header>
+          </div>
 
-          {/* Area Kartu Perencanaan Header (Grid) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Main Bento Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
             
-            {/* Planning Card Design */}
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl shadow-xl flex flex-col justify-center">
-              <p className="text-slate-400 font-medium mb-1">{planning.goalWeeks} weeks goal</p>
-              <div className="flex items-baseline justify-between mb-2">
-                <span className="text-4xl font-extrabold text-emerald-400">{planning.totalWeightChange} kg</span>
-                <span className="text-slate-500 text-sm font-semibold bg-slate-800/60 px-2 py-1 rounded">
-                   {planning.weightPerWeekChange} kg / week
-                </span>
-              </div>
-              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
-                <div className="bg-emerald-500 h-full w-1/3 rounded-full"></div>
-              </div>
-            </div>
-            
-            {/* Calorie Macro Dashboard Card */}
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl shadow-xl flex flex-col justify-center">
-              <p className="text-slate-400 font-medium mb-1">Target Kalori Harian</p>
-              <div className="flex items-baseline justify-between mb-2">
-                <div>
-                  <span className="text-4xl font-extrabold text-blue-500">{calories.target}</span>
-                  <span className="text-slate-400 ml-2 font-medium">Kcal</span>
+            {/* Hero / Quick Scan CTA (Span 12) */}
+            <div className="col-span-1 lg:col-span-12 rounded-[2rem] overflow-hidden relative min-h-[260px] flex items-center bg-surface-container-high shadow-sm border border-outline-variant/10 group cursor-pointer" onClick={() => navigate('/upload-food')}>
+              {/* Background Image */}
+              <img 
+                alt="Healthy fresh food" 
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 bg-surface-container-high" 
+                src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1200" 
+              />
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-on-surface/60 via-on-surface/20 to-transparent"></div>
+              
+              {/* Content */}
+              <div className="relative z-10 p-10 max-w-xl text-surface-container-lowest">
+                <h3 className="text-display-sm font-headline mb-3 text-white">Discover Nutritional Truth</h3>
+                <p className="text-surface-variant text-base mb-6 leading-relaxed opacity-90">Instantly analyze your meal's macro and micro-nutrient profile with our advanced visual recognition engine.</p>
+                <div className="bg-primary hover:bg-primary-fixed-dim text-on-primary px-6 py-3 rounded-full font-semibold inline-flex items-center space-x-3 transition-all shadow-lg active:scale-95">
+                  <span className="material-symbols-outlined">center_focus_strong</span>
+                  <span>Quick Scan</span>
                 </div>
-                <span className="text-emerald-400/90 bg-emerald-500/10 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-500/30">
-                  BMR: {calories.bmr} Kcal
-                </span>
-              </div>
-              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-3">
-                 {/* Visualisasi ini disederhanakan sebagai placeholder proges bar hari ini kalau dibutuhkan nanti */}
-                <div className="bg-blue-500 h-full w-[0%] rounded-full opacity-80"></div>
               </div>
             </div>
+
+            {/* Macro Summary Ring (Span 4) */}
+            <div className="col-span-1 lg:col-span-4 bg-surface-container-lowest rounded-[2rem] p-8 relative overflow-hidden flex flex-col items-center justify-center border border-outline-variant/15 shadow-sm">
+              <h3 className="text-lg font-bold text-on-surface mb-8 w-full text-left">Macro Integrity</h3>
+              <div className="relative w-48 h-48 flex items-center justify-center mb-6 shadow-sm rounded-full">
+                {/* SVG Ring and Text */}
+                <div className="absolute inset-0 rounded-full border-[14px] border-surface-container"></div>
+                {/* Simplified Conic Gradient for the Ring Look */}
+                <div 
+                  className="absolute inset-0 rounded-full border-[14px] border-transparent"
+                  style={{
+                    background: `conic-gradient(#006c51 0% ${macros.protein}%, #2ee0ad ${macros.protein}% ${macros.protein + macros.fat}%, #a43c12 ${macros.protein + macros.fat}% 100%)`,
+                    WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 14px), white calc(100% - 13px))'
+                  }}
+                ></div>
+                
+                <div className="flex flex-col items-center justify-center text-center">
+                  <span className="text-3xl font-black text-on-surface tracking-tighter">{calories.target}</span>
+                  <span className="text-xs text-on-surface-variant font-medium uppercase tracking-widest">Target kcal</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 w-full gap-2 mt-2">
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center space-x-1.5 mb-1">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    <span className="text-xs font-semibold text-secondary">Protein</span>
+                  </div>
+                  <span className="text-sm font-bold">{macros.protein}g</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center space-x-1.5 mb-1">
+                    <div className="w-2 h-2 rounded-full bg-primary-fixed-dim"></div>
+                    <span className="text-xs font-semibold text-secondary">Fats</span>
+                  </div>
+                  <span className="text-sm font-bold">{macros.fat}g</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center space-x-1.5 mb-1">
+                    <div className="w-2 h-2 rounded-full bg-tertiary"></div>
+                    <span className="text-xs font-semibold text-secondary">Carbs</span>
+                  </div>
+                  <span className="text-sm font-bold">{macros.carbs}g</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Metabolic Trend Chart (Span 8) */}
+            <div className="col-span-1 lg:col-span-8 bg-surface-container-lowest rounded-[2rem] p-8 flex flex-col border border-outline-variant/15 shadow-sm">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-on-surface tracking-tight">Metabolic Trend</h3>
+                  <p className="text-xs text-secondary">Weight progress vs target trajectory</p>
+                </div>
+                <div className="bg-surface-container-low px-4 py-2 rounded-full text-xs font-bold text-on-surface-variant flex items-center space-x-2 border border-outline-variant/10">
+                  <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                  <span>Last 30 Days</span>
+                </div>
+              </div>
+              
+              <div className="flex-1 w-full min-h-[220px]">
+                <Line data={chartData} options={chartOptions} />
+              </div>
+
+              <div className="mt-6 flex justify-between items-center px-2">
+                 <div className="flex flex-col text-left">
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1">Current</span>
+                    <span className="text-2xl font-black text-on-surface">{weightProgress.todayWeight}<span className="text-sm text-secondary font-medium ml-1">kg</span></span>
+                 </div>
+                 <div className="h-10 w-px bg-surface-container"></div>
+                 <div className="flex flex-col text-right">
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1">Start Weight</span>
+                    <span className="text-2xl font-black text-on-surface">{weightProgress.startWeight}<span className="text-sm text-secondary font-medium ml-1">kg</span></span>
+                 </div>
+              </div>
+            </div>
+
+            {/* Quick Metrics (Span 12) */}
+            <div className="col-span-1 lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Planning Metric */}
+              <div className="bg-surface-container-low rounded-[2rem] p-6 border border-outline-variant/10 flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <span className="material-symbols-outlined text-2xl">event_upcoming</span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">{planning.goalWeeks} Week Goal</p>
+                  <p className="text-2xl font-black text-on-surface">{planning.totalWeightChange} <span className="text-sm font-medium">kg total</span></p>
+                </div>
+              </div>
+
+              {/* Weekly Velocity */}
+              <div className="bg-surface-container-low rounded-[2rem] p-6 border border-outline-variant/10 flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-tertiary/10 flex items-center justify-center text-tertiary border border-tertiary/20">
+                  <span className="material-symbols-outlined text-2xl">trending_down</span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-secondary uppercase tracking-widest mb-1">Weekly Velocity</p>
+                  <p className="text-2xl font-black text-on-surface">{planning.weightPerWeekChange} <span className="text-sm font-medium">kg/week</span></p>
+                </div>
+              </div>
+
+              {/* BMR Stat */}
+              <div className="bg-primary-container/10 border border-primary/20 rounded-[2rem] p-6 flex items-center gap-5">
+                <div className="w-14 h-14 rounded-2xl bg-primary text-on-primary flex items-center justify-center shadow-md">
+                  <span className="material-symbols-outlined text-2xl">bolt</span>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Basal Metabolic Rate</p>
+                  <p className="text-2xl font-black text-on-surface">{calories.bmr} <span className="text-sm font-medium">kcal</span></p>
+                </div>
+              </div>
+            </div>
+
           </div>
-
-          {/* Bagian Area Weight Progress Chart (ChartJS Render Container) */}
-          <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-6 md:p-8 rounded-2xl shadow-xl mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-              <h3 className="text-xl font-bold text-white tracking-tight">Weight Progress</h3>
-              <span className="px-3 py-1.5 bg-slate-800/80 text-slate-300 rounded-md text-xs font-medium border border-slate-700/80 shadow-[inset_0_1px_4px_rgba(0,0,0,0.5)]">Last 30 Days</span>
-            </div>
-            
-            {/* Render Grafik (Hanya ada Tinggi yang dibutuhkan oleh ChartJS) */}
-            <div className="h-64 w-full">
-              <Line data={chartData} options={chartOptions} />
-            </div>
-            
-            <div className="flex justify-between items-center mt-6 pt-5 border-t border-slate-800/60">
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-widest text-left">Today</span>
-                <span className="text-2xl font-black text-white">{weightProgress.todayWeight} <span className="text-lg text-slate-400 font-normal">kg</span></span>
-              </div>
-              <div className="h-10 w-px bg-slate-700/50"></div>
-              <div className="flex flex-col text-right">
-                <span className="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-widest">{weightProgress.startWeightDate}</span>
-                <span className="text-2xl font-black text-white">{weightProgress.startWeight} <span className="text-lg text-slate-400 font-normal">kg</span></span>
-              </div>
-            </div>
-          </div>
-
-          {/* Kotak 3 Kartu Progress Kebutuhan Makro (Bawah) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_15px_rgba(20,184,166,0.05)] flex items-center space-x-5 transition-transform hover:-translate-y-1 hover:border-teal-500/30">
-              <div className="w-14 h-14 rounded-full bg-teal-500/10 flex items-center justify-center border border-teal-500/30 flex-shrink-0 shadow-[inset_0_0_10px_rgba(20,184,166,0.2)]">
-                <FontAwesomeIcon icon={faDrumstickBite} className="text-2xl text-teal-400" />
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-teal-400 tracking-tight">{macros.protein}g</p>
-                <p className="text-slate-400 text-sm font-semibold mt-0.5 uppercase tracking-widest">Protein</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_15px_rgba(245,158,11,0.05)] flex items-center space-x-5 transition-transform hover:-translate-y-1 hover:border-amber-500/30">
-              <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/30 flex-shrink-0 shadow-[inset_0_0_10px_rgba(245,158,11,0.2)]">
-                <FontAwesomeIcon icon={faBreadSlice} className="text-2xl text-amber-400" />
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-amber-400 tracking-tight">{macros.carbs}g</p>
-                <p className="text-slate-400 text-sm font-semibold mt-0.5 uppercase tracking-widest">Karbo</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 p-6 rounded-2xl shadow-[0_4px_15px_rgba(239,68,68,0.05)] flex items-center space-x-5 transition-transform hover:-translate-y-1 hover:border-red-500/30">
-              <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/30 flex-shrink-0 shadow-[inset_0_0_10px_rgba(239,68,68,0.2)]">
-                <FontAwesomeIcon icon={faCheese} className="text-2xl text-red-500" />
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold text-red-500 tracking-tight">{macros.fat}g</p>
-                <p className="text-slate-400 text-sm font-semibold mt-0.5 uppercase tracking-widest">Lemak</p>
-              </div>
-            </div>
-          </div>
-
         </div>
       </main>
     </div>

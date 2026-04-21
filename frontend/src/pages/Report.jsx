@@ -1,36 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Download, ChevronDown, Loader2 } from 'lucide-react';
-
-// Chart.js imports
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  LineController,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  LineController,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import Header from '../components/Header';
 
 export default function Report() {
   const [user, setUser] = useState(null);
@@ -51,286 +22,205 @@ export default function Report() {
   }, [navigate]);
 
   useEffect(() => {
-    // Simulasi Fetch Data '/api/report?range=...' menggunakan JWT Token
     const fetchReportData = () => {
       setIsLoading(true);
-      
-      // Simulasi delay jaringan API
       setTimeout(() => {
-        // State Dummy siap digunakan
         const dummyData = {
           summary: {
             avgCalories: 1850,
             weightChange: -1.2,
-            targetCompliance: 85
+            targetCompliance: 85,
+            caloricVelocity: -200
           },
           charts: {
-            barLabels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-            barData: [1600, 1850, 1750, 2100, 1800, 2200, 1750],
-            targetLine: 1950,
-            macroLabels: ['Protein', 'Karbohidrat', 'Lemak'],
-            macroData: [30, 45, 25] // Presentase
+            weeklyData: [
+                { day: 'M', value: 60, status: 'normal' },
+                { day: 'T', value: 75, status: 'normal' },
+                { day: 'W', value: 45, status: 'active' },
+                { day: 'T', value: 80, status: 'normal' },
+                { day: 'F', value: 95, status: 'tertiary' },
+                { day: 'S', value: 70, status: 'normal' },
+                { day: 'S', value: 65, status: 'normal' }
+            ],
+            macros: {
+                protein: { current: 112, target: 130, percent: 40 },
+                carbs: { current: 180, target: 200, percent: 30 },
+                fats: { current: 65, target: 70, percent: 30 }
+            },
+            micros: [
+                { name: 'Iron', current: 14, target: 18, unit: 'mg', icon: 'water_drop', color: 'text-tertiary', bar: 'bg-tertiary', width: '77%' },
+                { name: 'Vitamin D', current: 15, target: 15, unit: 'mcg', icon: 'wb_sunny', color: 'text-primary', bar: 'bg-primary', width: '100%' },
+                { name: 'Calcium', current: 850, target: 1000, unit: 'mg', icon: 'medication', color: 'text-secondary', bar: 'bg-secondary', width: '85%' },
+                { name: 'Fiber', current: 22, target: 25, unit: 'g', icon: 'eco', color: 'text-primary', bar: 'bg-primary', width: '88%' }
+            ]
           },
-          history: [
-            { id: 1, date: '2026-04-07', name: 'Nasi Goreng Ayam', kalori: 450, protein: 15.5, karbo: 50.2, lemak: 12.0 },
-            { id: 2, date: '2026-04-06', name: 'Salad Buah Segar', kalori: 230, protein: 3.5, karbo: 45.0, lemak: 5.0 },
-            { id: 3, date: '2026-04-05', name: 'Dada Ayam Bakar', kalori: 320, protein: 35.0, karbo: 5.0, lemak: 8.0 },
-            { id: 4, date: '2026-04-04', name: 'Oatmeal Muffin', kalori: 300, protein: 8.0, karbo: 48.0, lemak: 6.0 },
-            { id: 5, date: '2026-04-03', name: 'Sate Taichan', kalori: 400, protein: 42.0, karbo: 15.0, lemak: 16.0 },
-          ]
+          recommendation: {
+              title: 'Boost Iron Intake',
+              desc: 'Your iron levels have been trending slightly below your ideal weight goal metrics. Adding dark leafy greens to your morning routine can help close this gap.',
+              image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1000&auto=format&fit=crop'
+          }
         };
-        
         setReportData(dummyData);
         setIsLoading(false);
-      }, 1200); 
+      }, 800); 
     };
-
     fetchReportData();
-  }, [range]); // Dependency trigegrs re-fetch upon range change
-
-  const handleExportPDF = () => {
-    alert('Simulasi: Merender dan Mengunduh Laporan PDF...');
-  };
+  }, [range]);
 
   if (!user) return null;
 
-  // Chart configs
-  const barChartData = {
-    labels: reportData?.charts?.barLabels || [],
-    datasets: [
-      {
-        type: 'line',
-        label: 'Batas Target Kalori (BMR)',
-        data: Array(7).fill(reportData?.charts?.targetLine || 0),
-        borderColor: 'rgba(239, 68, 68, 0.8)', // Merah
-        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-        borderWidth: 2,
-        borderDash: [5, 5],
-        pointRadius: 0,
-        fill: false,
-      },
-      {
-        type: 'bar',
-        label: 'Konsumsi Aktual (Kcal)',
-        data: reportData?.charts?.barData || [],
-        backgroundColor: 'rgba(16, 185, 129, 0.8)', // Emerald 500
-        borderRadius: 6,
-        barPercentage: 0.6,
-      }
-    ],
-  };
-
-  const barChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#cbd5e1', font: { family: 'inherit', size: 13 } }, position: 'top' },
-      tooltip: { padding: 10, cornerRadius: 8 }
-    },
-    scales: {
-      y: { 
-        grid: { color: 'rgba(51, 65, 85, 0.5)' }, 
-        ticks: { color: '#94a3b8' },
-        beginAtZero: true 
-      },
-      x: { 
-        grid: { display: false }, 
-        ticks: { color: '#94a3b8' } 
-      }
-    }
-  };
-
-  const doughnutData = {
-    labels: reportData?.charts?.macroLabels || [],
-    datasets: [
-      {
-        data: reportData?.charts?.macroData || [],
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.9)', // Blue (Protein)
-          'rgba(245, 158, 11, 0.9)', // Amber (Karbo)
-          'rgba(239, 68, 68, 0.9)',  // Red (Lemak)
-        ],
-        borderColor: '#020617', // slate-950 border (blend in)
-        borderWidth: 4,
-        hoverOffset: 6
-      },
-    ],
-  };
-
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '65%',
-    plugins: {
-      legend: { 
-        position: 'bottom', 
-        labels: { color: '#cbd5e1', padding: 20, font: { size: 13 } } 
-      },
-    },
-  };
-
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950 text-white font-sans">
-      {/* Komponen Sidebar Aktif di Laporan */}
-      <Sidebar activePage="report" user={user} />
+    <div className="flex h-screen overflow-hidden bg-background text-on-background font-body antialiased">
+      <Sidebar user={user} />
 
-      {/* Area Konten Utama */}
-      <main className="flex-1 overflow-y-auto relative bg-slate-950 px-6 py-8 md:px-10">
-        
-        {/* Dekorasi Glow Latar */}
-        <div className="fixed top-[-10%] left-[20%] w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+      <main className="flex-1 lg:ml-72 flex flex-col min-h-screen overflow-y-auto pb-24 lg:pb-0">
+        <Header user={user} />
 
-        {/* HEADER LAPORAN */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-5 border-b border-slate-800/60 pb-6 relative z-10">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-1.5">
-              Laporan Nutrisi & Evaluasi
-            </h1>
-            <p className="text-slate-400 text-sm">
-              Pantau histori asupan kalori secara mendalam dan amati grafik gaya hidup Anda.
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            {/* Dropdown Bergaya Glassmorphism */}
-            <div className="relative flex-1 md:flex-none">
-              <select 
-                value={range}
-                onChange={(e) => setRange(e.target.value)}
-                className="w-full appearance-none bg-white/5 backdrop-blur-md border border-white/20 text-slate-200 px-5 py-3 rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50 cursor-pointer pr-12 transition-all hover:bg-white/10"
-              >
-                <option value="7days" className="bg-slate-900">7 Hari Terakhir</option>
-                <option value="30days" className="bg-slate-900">30 Hari Terakhir</option>
-                <option value="thismonth" className="bg-slate-900">Bulan Ini</option>
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <div className="flex-1 p-6 md:p-8 lg:p-12 max-w-screen-2xl mx-auto w-full space-y-12">
+          {/* Header Section */}
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <h2 className="text-sm font-bold text-primary tracking-widest uppercase mb-2">Nutritional Insights</h2>
+              <h1 className="text-display-md font-headline font-bold text-on-surface leading-tight">Weekly <br/><span className="text-secondary font-medium">Breakdown</span></h1>
             </div>
+            {/* Date Selector */}
+            <div className="inline-flex items-center bg-surface-container-high/40 backdrop-blur-md rounded-full p-1 border border-outline-variant/20 self-start shadow-sm hover:shadow-md transition-all">
+              <button className="px-5 py-2 rounded-full text-xs font-bold text-secondary hover:text-on-surface transition-colors" onClick={() => setRange('7days')}>7 DAYS</button>
+              <button className="px-5 py-2 rounded-full text-xs font-bold bg-surface-container-lowest text-on-surface shadow-sm">OCT 12-18</button>
+              <button className="p-2 ml-1 rounded-full text-secondary hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-[18px]">calendar_month</span></button>
+            </div>
+          </header>
 
-            {/* Tombol PDF Blue Solid */}
-            <button 
-              onClick={handleExportPDF}
-              className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-blue-500/25 text-sm whitespace-nowrap border-b-2 border-blue-800"
-            >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Ekspor PDF</span>
-            </button>
-          </div>
-        </div>
-
-        {/* LOADING STATE - SPINNER */}
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-72 text-emerald-500 relative z-10 animate-in fade-in">
-            <Loader2 className="w-12 h-12 animate-spin mb-4 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
-            <p className="text-slate-400 font-medium tracking-wide">Mengambil data analisis server...</p>
-          </div>
-        ) : (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
-            
-            {/* TOP ROW: KARTU RINGKASAN */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {isLoading ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-20 animate-pulse">
+                <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+                <p className="text-secondary font-bold tracking-widest text-xs uppercase">Computing Bio-Metrics...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
               
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)] group">
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Rata-Rata Kalori Harian</span>
-                <div className="flex items-baseline gap-2 mt-auto">
-                  <span className="text-4xl md:text-5xl font-black text-blue-500 group-hover:text-blue-400 transition-colors">{reportData?.summary?.avgCalories}</span>
-                  <span className="text-slate-500 font-bold">Kcal</span>
-                </div>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] group">
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Perubahan Berat Badan</span>
-                <div className="flex items-baseline gap-2 mt-auto">
-                  <span className="text-4xl md:text-5xl font-black text-emerald-500 group-hover:text-emerald-400 transition-colors">
-                    {reportData?.summary?.weightChange > 0 ? '+' : ''}{reportData?.summary?.weightChange}
+              {/* Energy Balance Bento */}
+              <div className="md:col-span-8 bg-surface-container-low rounded-[2.5rem] p-10 relative overflow-hidden flex flex-col justify-between min-h-[400px] border border-outline-variant/10 group">
+                <div className="absolute -right-32 -top-32 w-80 h-80 bg-primary/5 rounded-full blur-[80px] group-hover:bg-primary/10 transition-colors duration-1000"></div>
+                
+                <div className="relative z-10 flex justify-between items-start">
+                  <div>
+                    <h3 className="text-xl font-bold text-on-surface mb-1">Energy Balance</h3>
+                    <p className="text-sm text-secondary font-medium">Tracking towards <span className="text-primary font-bold">Ideal Weight</span> goal</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-wider border border-primary/20">
+                    <span className="material-symbols-outlined text-[16px] fill">trending_down</span>
+                    {reportData.summary.caloricVelocity} kcal/day
                   </span>
-                  <span className="text-slate-500 font-bold">kg</span>
                 </div>
-              </div>
 
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-2xl flex flex-col transition-all hover:bg-white/10 hover:border-white/20 hover:shadow-[0_0_20px_rgba(245,158,11,0.1)] group">
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Kepatuhan Target</span>
-                <div className="flex items-baseline gap-2 mt-auto">
-                  <span className="text-4xl md:text-5xl font-black text-amber-500 group-hover:text-amber-400 transition-colors">{reportData?.summary?.targetCompliance}%</span>
-                  <span className="text-slate-500 font-bold">rata-rata</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* MIDDLE ROW: AREA GRAFIK */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
-              {/* Bar Chart (Konsumsi Kalori) */}
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-7 rounded-2xl lg:col-span-2 hover:border-white/20 transition-all shadow-xl">
-                <h3 className="text-lg font-bold text-slate-200 mb-6 font-sans flex items-center justify-between">
-                  Grafik Konsumsi Aktual vs Target
-                  <span className="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-full">{range === '7days' ? '1 Minggu' : 'Data'}</span>
-                </h3>
-                <div className="h-72 w-full">
-                  <Bar data={barChartData} options={barChartOptions} />
-                </div>
-              </div>
-
-              {/* Doughnut Chart (Distribusi Makro) */}
-              <div className="bg-white/5 backdrop-blur-md border border-white/10 p-7 rounded-2xl lg:col-span-1 hover:border-white/20 transition-all shadow-xl flex flex-col">
-                <h3 className="text-lg font-bold text-slate-200 mb-6 font-sans">
-                  Distribusi Nutrisi
-                  <span className="block text-xs font-normal text-slate-500 mt-0.5">Proporsi rata-rata asupan makro.</span>
-                </h3>
-                <div className="flex-1 w-full min-h-[220px] flex justify-center items-center relative">
-                  <Doughnut data={doughnutData} options={doughnutOptions} />
-                  {/* Label Tengah Transparan */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest translate-y-[-10px]">Ratio</span>
+                <div className="relative z-10 mt-12 flex flex-col md:flex-row md:items-end gap-12">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-7xl font-black tracking-tighter text-on-surface">{reportData.summary.avgCalories}</span>
+                    <span className="text-xl font-bold text-secondary lowercase">kcal avg</span>
+                  </div>
+                  
+                  {/* Custom Bar Chart */}
+                  <div className="flex-1 h-32 flex items-end gap-2.5 pb-2">
+                    {reportData.charts.weeklyData.map((d, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-3 group/bar">
+                         <div className="w-full bg-surface-container-high rounded-full relative h-full flex items-end overflow-hidden transition-all group-hover/bar:bg-surface-container-highest">
+                            <div 
+                              className={`w-full rounded-full transition-all duration-1000 delay-${i*100} ${d.status === 'active' ? 'bg-primary shadow-[0_0_15px_rgba(0,108,81,0.4)]' : d.status === 'tertiary' ? 'bg-tertiary' : 'bg-outline-variant/40'}`} 
+                              style={{ height: `${d.value}%` }}
+                            ></div>
+                         </div>
+                         <span className={`text-[10px] font-black group-hover/bar:scale-125 transition-transform ${d.status === 'active' ? 'text-primary' : 'text-secondary'}`}>{d.day}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
 
-            </div>
+              {/* Macro Ring Bento */}
+              <div className="md:col-span-4 bg-surface-container-low rounded-[2.5rem] p-10 flex flex-col items-center justify-between relative border border-outline-variant/10 shadow-sm">
+                <h3 className="text-lg font-bold text-on-surface absolute top-10 left-10">Macronutrients</h3>
+                
+                <div className="relative w-56 h-56 mt-8 flex items-center justify-center group">
+                  <svg className="w-full h-full transform -rotate-90 filter drop-shadow-xl" viewBox="0 0 100 100">
+                    <circle className="text-surface-container-high" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="10"></circle>
+                    {/* Protein */}
+                    <circle className="text-primary transition-all duration-1000" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="11" strokeDasharray="263.9" strokeDashoffset={263.9 - (263.9 * 0.4)} strokeLinecap="round"></circle>
+                    {/* Carbs */}
+                    <circle className="text-secondary-fixed-dim transition-all duration-1000" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="11" strokeDasharray="263.9" strokeDashoffset={263.9 - (263.9 * 0.3)} strokeLinecap="round" style={{ transform: 'rotate(144deg)', transformOrigin: '50% 50%' }}></circle>
+                    {/* Fats */}
+                    <circle className="text-tertiary-container transition-all duration-1000" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" strokeWidth="11" strokeDasharray="263.9" strokeDashoffset={263.9 - (263.9 * 0.3)} strokeLinecap="round" style={{ transform: 'rotate(252deg)', transformOrigin: '50% 50%' }}></circle>
+                  </svg>
+                  <div className="absolute text-center flex flex-col items-center justify-center">
+                    <span className="text-4xl font-black tracking-tighter text-on-surface">{reportData.charts.macros.protein.current}<span className="text-sm text-secondary font-bold">g</span></span>
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1 group-hover:scale-110 transition-transform">Protein</span>
+                  </div>
+                </div>
 
-            {/* BOTTOM ROW: TABEL RIWAYAT MENDATAL */}
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-xl hover:border-white/20 transition-all">
-              <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                <h3 className="text-lg font-bold text-slate-200">Riwayat Catatan Makanan</h3>
-                <button className="text-emerald-400 hover:text-emerald-300 text-sm font-semibold transition-colors">Lihat Semua →</button>
+                <div className="w-full mt-10 space-y-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm"></div><span className="font-bold text-secondary">Protein ({reportData.charts.macros.protein.percent}%)</span></div>
+                    <span className="font-black text-on-surface">{reportData.charts.macros.protein.current}g / {reportData.charts.macros.protein.target}g</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-secondary-fixed-dim shadow-sm"></div><span className="font-bold text-secondary">Carbs ({reportData.charts.macros.carbs.percent}%)</span></div>
+                    <span className="font-black text-on-surface">{reportData.charts.macros.carbs.current}g / {reportData.charts.macros.carbs.target}g</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs">
+                    <div className="flex items-center gap-3"><div className="w-2.5 h-2.5 rounded-full bg-tertiary-container shadow-sm"></div><span className="font-bold text-secondary">Fats ({reportData.charts.macros.fats.percent}%)</span></div>
+                    <span className="font-black text-on-surface">{reportData.charts.macros.fats.current}g / {reportData.charts.macros.fats.target}g</span>
+                  </div>
+                </div>
               </div>
-              <div className="overflow-x-auto w-full">
-                <table className="w-full text-left border-collapse min-w-[700px]">
-                  <thead>
-                    <tr className="bg-slate-900/40 text-xs text-slate-400 border-b border-white/10 uppercase tracking-widest">
-                      <th className="py-5 px-6 font-bold w-32">Tanggal</th>
-                      <th className="py-5 px-6 font-bold">Nama Hidangan</th>
-                      <th className="py-5 px-6 font-bold">Kalori</th>
-                      <th className="py-5 px-6 font-bold">Protein</th>
-                      <th className="py-5 px-6 font-bold">Karbo</th>
-                      <th className="py-5 px-6 font-bold">Lemak</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportData && reportData.history.map((row, idx, arr) => (
-                      <tr 
-                        key={row.id} 
-                        className={`text-sm md:text-base border-white/5 transition-colors hover:bg-white-[0.04] ${idx % 2 === 0 ? 'bg-transparent' : 'bg-slate-900/30'} ${idx === arr.length - 1 ? 'border-b-0' : 'border-b'}`}
-                      >
-                        <td className="py-4 px-6 text-slate-400 font-medium whitespace-nowrap">{row.date}</td>
-                        <td className="py-4 px-6 text-white font-bold">{row.name}</td>
-                        <td className="py-4 px-6 text-slate-300">
-                          <span className="px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md font-bold shadow-sm">
-                            {row.kalori} Kcal
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-slate-300 font-semibold">{row.protein} <span className="text-slate-500 text-xs">g</span></td>
-                        <td className="py-4 px-6 text-slate-300 font-semibold">{row.karbo} <span className="text-slate-500 text-xs">g</span></td>
-                        <td className="py-4 px-6 text-slate-300 font-semibold">{row.lemak} <span className="text-slate-500 text-xs">g</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
 
-          </div>
-        )}
+              {/* Micronutrients Bento */}
+              <div className="md:col-span-5 bg-surface-container-lowest shadow-2xl rounded-[2.5rem] p-10 border border-outline-variant/15 group">
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-lg font-bold text-on-surface">Micro Goals</h3>
+                  <button className="p-2 text-secondary hover:bg-surface-container rounded-full transition-colors"><span className="material-symbols-outlined text-[20px]">more_horiz</span></button>
+                </div>
+                <div className="space-y-8">
+                  {reportData.charts.micros.map((m, i) => (
+                    <div key={i} className="group/micro">
+                      <div className="flex justify-between items-end text-xs mb-3">
+                        <span className={`font-black uppercase tracking-widest flex items-center gap-2 ${m.color}`}>
+                          <span className="material-symbols-outlined text-[18px] fill">{m.icon}</span> 
+                          {m.name}
+                        </span>
+                        <span className="text-secondary font-bold">
+                          {m.current}{m.unit} / <span className={`${m.color} font-black`}>{m.target}{m.unit}</span>
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 bg-surface-container-high/50 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${m.bar} rounded-full transition-all duration-1000 shadow-sm`}
+                          style={{ width: m.width }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recommendation Editorial Bento */}
+              <div className="md:col-span-7 bg-surface-container-low rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row border border-outline-variant/10 shadow-sm hover:shadow-md transition-shadow">
+                <div className="p-10 flex-1 flex flex-col justify-center items-start text-left">
+                  <span className="text-[10px] font-black text-tertiary tracking-[0.3em] uppercase mb-3">Insights Engine</span>
+                  <h3 className="text-3xl font-black text-on-surface leading-tight mb-4 tracking-tighter">{reportData.recommendation.title}</h3>
+                  <p className="text-secondary text-sm font-medium leading-relaxed mb-8 max-w-[340px]">{reportData.recommendation.desc}</p>
+                  <button className="px-8 py-4 bg-surface-container-lowest text-on-surface rounded-full text-xs font-black uppercase tracking-widest border border-outline-variant/20 hover:bg-primary hover:text-white hover:border-transparent transition-all flex items-center gap-3 shadow-sm active:scale-95">
+                    Explore Recipes <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </button>
+                </div>
+                <div className="w-full md:w-2/5 h-64 md:h-auto bg-cover bg-center relative group overflow-hidden">
+                  <img src={reportData.recommendation.image} alt="Recommendation" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-l from-on-surface/20 to-transparent"></div>
+                </div>
+              </div>
+
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
