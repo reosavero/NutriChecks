@@ -67,7 +67,7 @@ export default function Register() {
     setLoading(true);
     try {
       const { konfirmasi_password, ...submitData } = formData;
-      await axios.post('http://localhost:5001/api/register', submitData);
+      await axios.post('http://localhost:5000/api/register', submitData);
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Registrasi gagal. Cek kembali data Anda.');
@@ -182,11 +182,15 @@ export default function Register() {
                   </button>
                 </div>
                 <div className="space-y-1.5 pt-2">
-                  <label className="text-xs font-bold text-on-surface uppercase tracking-wider ml-1">Velocity (kg / week)</label>
+                  <label className="text-xs font-bold text-on-surface uppercase tracking-wider ml-1">Pilih Kecepatan Target</label>
                   <div className="grid grid-cols-3 gap-2">
-                    {['0.25', '0.5', '1.0'].map(val => (
-                      <button key={val} onClick={() => setFormData({...formData, kecepatan: val})} className={`py-3 rounded-lg font-bold text-sm transition-all ${formData.kecepatan === val ? 'bg-on-background text-surface' : 'bg-surface-container text-on-surface-variant'}`}>
-                         {val} kg
+                    {[
+                      { val: 'lambat', label: 'Lambat' },
+                      { val: 'normal', label: 'Normal' },
+                      { val: 'cepat', label: 'Cepat' }
+                    ].map(item => (
+                      <button key={item.val} onClick={() => setFormData({...formData, kecepatan: item.val})} className={`py-3 rounded-lg font-bold text-sm transition-all ${formData.kecepatan === item.val ? 'bg-on-background text-surface shadow-md' : 'bg-surface-container text-on-surface-variant'}`}>
+                         {item.label}
                       </button>
                     ))}
                   </div>

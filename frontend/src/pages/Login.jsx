@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -10,13 +10,19 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Hapus semua data sesi lama saat masuk ke halaman login
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5001/api/login', {
+      const res = await axios.post('http://localhost:5000/api/login', {
         email,
         password
       });
@@ -24,7 +30,12 @@ export default function Login() {
       if (res.data.token) {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
-        navigate('/dashboard');
+        // Arahkan admin ke panel admin, user biasa ke dashboard
+        if (res.data.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');

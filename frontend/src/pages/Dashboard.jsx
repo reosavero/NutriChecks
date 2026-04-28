@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend);
 
@@ -21,12 +21,13 @@ export default function Dashboard() {
         return;
       }
       try {
-        const res = await axios.get('http://localhost:5001/api/dashboard', {
+        const res = await axios.get('http://localhost:5000/api/dashboard', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(res.data);
       } catch (err) {
         console.error(err);
+        setData({ error: err.response?.data?.message || 'Gagal terhubung ke backend server.' });
       } finally {
         setLoading(false);
       }
@@ -34,7 +35,7 @@ export default function Dashboard() {
     fetchDashboard();
   }, [navigate]);
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background text-on-surface">
         <div className="flex flex-col items-center">
@@ -45,7 +46,24 @@ export default function Dashboard() {
     );
   }
 
-  const { planning, calories, weightProgress, macros, user } = data;
+  if (data?.error || !data) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background text-on-surface font-body">
+        <div className="bg-error/10 p-8 rounded-3xl border border-error/20 flex flex-col items-center max-w-md text-center">
+            <span className="material-symbols-outlined text-error text-5xl mb-4">cloud_off</span>
+            <h2 className="text-xl font-black text-error mb-2">Sinkronisasi Gagal</h2>
+            <p className="text-sm font-medium text-secondary mb-6">{data?.error || 'Koneksi ke sistem backend utama terputus.'}</p>
+            <button onClick={() => window.location.reload()} className="px-6 py-3 bg-surface-container hover:bg-surface-container-high rounded-full font-bold text-xs transition-colors">
+              Coba Lagi
+            </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { planning, calories, weightProgress, macros } = data;
+  const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = { ...data.user, role: localUser.role || data.user.role, avatar: localUser.avatar || null };
 
   // Setup Visualisasi Grafik (Chart.js) matching the High-Tech style
   const chartData = {
@@ -112,7 +130,7 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 lg:ml-72 flex flex-col min-h-screen overflow-y-auto pb-24 lg:pb-0">
-        <Header user={user} />
+
 
         {/* Dashboard Canvas (Bento Grid Layout) */}
         <div className="flex-1 p-6 md:p-8 max-w-screen-2xl mx-auto w-full space-y-8">

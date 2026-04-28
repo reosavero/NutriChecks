@@ -15,14 +15,16 @@ export default function Sidebar({ user = null }) {
   };
 
   const profileName = user?.nama || 'Guest';
-  const profileAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${profileName.charAt(0)}&background=006c51&color=ffffff`;
+  const profileAvatar = user?.avatar 
+    ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`) 
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(profileName.charAt(0))}&background=006c51&color=ffffff`;
 
   const navItems = [
-    { key: 'dashboard', label: 'Bio-Metrics', icon: 'monitoring', path: '/dashboard' },
-    { key: 'upload', label: 'AI Assistant', icon: 'auto_awesome', path: '/upload-food' },
-    { key: 'report', label: 'History', icon: 'history', path: '/report' },
-    { key: 'menu', label: 'Meal Log', icon: 'restaurant', path: '/food-menu' },
-    { key: 'community', label: 'Community', icon: 'groups', path: '/community' },
+    { key: 'dashboard', label: 'Dashboard', icon: 'monitoring', path: '/dashboard' },
+    { key: 'upload', label: 'Asisten AI', icon: 'auto_awesome', path: '/upload-food' },
+    { key: 'report', label: 'Laporan', icon: 'history', path: '/report' },
+    { key: 'menu', label: 'Rekomendasi Makanan', icon: 'restaurant', path: '/food-menu' },
+    { key: 'community', label: 'Komunitas', icon: 'groups', path: '/community' },
   ];
 
   return (
@@ -65,31 +67,41 @@ export default function Sidebar({ user = null }) {
           })}
         </nav>
 
-        {/* CTA */}
-        <div className="mt-8 mb-4">
-          <button 
-            onClick={() => navigate('/upload-food')}
-            className="w-full py-3 px-4 bg-tertiary text-on-tertiary rounded-full font-semibold text-sm hover:opacity-90 transition-opacity flex items-center justify-center space-x-2 shadow-[0_8px_16px_-6px_rgba(164,60,18,0.3)] hover:-translate-y-0.5 transform transition-transform"
-          >
-            <span className="material-symbols-outlined text-[20px]">add_circle</span>
-            <span>Log Critical Meal</span>
-          </button>
-        </div>
+
 
         {/* Footer Tabs */}
         <div className="pt-4 border-t border-outline-variant/10 space-y-1">
           {/* User Profile Info */}
-          <div className="px-4 mb-4 py-3 bg-surface-container-high/40 rounded-2xl flex items-center gap-3 border border-outline-variant/10">
-            <img 
-              src={profileAvatar} 
-              alt={profileName} 
-              className="w-10 h-10 rounded-full border border-primary/20 object-cover" 
-            />
+          {/* Interactive Profile Session - Navigate to Settings */}
+          <button 
+            onClick={() => navigate('/settings')}
+            className="w-full px-4 mb-4 py-3 bg-surface-container-high/40 rounded-2xl flex items-center gap-3 border border-outline-variant/10 hover:bg-surface-container-highest hover:border-primary/30 transition-all group text-left"
+          >
+            <div className="relative">
+              <img 
+                src={profileAvatar} 
+                alt={profileName} 
+                className="w-10 h-10 rounded-full border border-primary/20 object-cover group-hover:scale-105 transition-transform" 
+              />
+              <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-0.5 shadow-lg scale-0 group-hover:scale-100 transition-transform">
+                <span className="material-symbols-outlined text-[10px] block">edit</span>
+              </div>
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-black text-on-surface truncate line-clamp-1">{profileName}</p>
-              <p className="text-[10px] font-bold text-secondary uppercase tracking-widest">Active Member</p>
+              <p className="text-[10px] font-bold text-secondary uppercase tracking-widest group-hover:text-primary transition-colors">Kelola Profil</p>
             </div>
-          </div>
+          </button>
+
+          {user?.role === 'admin' && (
+            <button 
+              onClick={() => navigate('/admin')}
+              className="w-full flex items-center px-4 py-3 text-primary bg-primary/5 hover:bg-primary/10 transition-colors rounded-xl group mb-2 border border-primary/10"
+            >
+              <span className="material-symbols-outlined mr-3 transition-transform group-hover:scale-110 fill">admin_panel_settings</span>
+              <span className="font-bold text-sm">Admin Panel</span>
+            </button>
+          )}
 
           <button 
             className="w-full flex items-center px-4 py-3 text-secondary hover:bg-surface-container hover:text-primary transition-colors rounded-xl group"
@@ -125,6 +137,20 @@ export default function Sidebar({ user = null }) {
             </button>
           );
         })}
+        
+        {/* Tombol Admin Khusus Mobile */}
+        {user?.role === 'admin' && (
+           <button
+             onClick={() => navigate('/admin')}
+             className={`flex flex-col items-center gap-1 transition-all ${location.pathname === '/admin' ? 'text-primary' : 'text-secondary'}`}
+           >
+             <div className={`${location.pathname === '/admin' ? 'bg-primary/10 px-4 py-1 rounded-full' : ''}`}>
+               <span className={`material-symbols-outlined text-[24px] ${location.pathname === '/admin' ? 'fill' : ''}`}>
+                 admin_panel_settings
+               </span>
+             </div>
+           </button>
+        )}
       </nav>
     </>
   );

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+
 
 export default function Recommendations() {
   const [user, setUser] = useState(null);
@@ -88,7 +88,7 @@ export default function Recommendations() {
       <Sidebar activePage="rekomendasi" user={user} />
 
       <main className="flex-1 lg:ml-72 flex flex-col min-h-screen overflow-y-auto pb-24 lg:pb-0">
-        <Header user={user} />
+
 
         <div className="flex-1 p-6 md:p-8 lg:p-12 max-w-screen-2xl mx-auto w-full space-y-12">
           {/* Header */}

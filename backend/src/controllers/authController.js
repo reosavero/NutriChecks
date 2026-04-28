@@ -20,7 +20,10 @@ const calculateBMR = (berat, tinggi, usia, gender) => {
 const calculateTargetKalori = (berat, tinggi, usia, gender, tujuan, kecepatan) => {
     const bmr = calculateBMR(berat, tinggi, usia, gender);
     const tdee = bmr * 1.2; // Sedentary activity multiplier
-    const kecepatanFloat = parseFloat(kecepatan) || 0.5;
+    let kecepatanFloat = 0.5; // default normal
+    if (kecepatan === 'lambat') kecepatanFloat = 0.25;
+    if (kecepatan === 'cepat') kecepatanFloat = 1.0;
+    
     const dailyAdjustment = (kecepatanFloat * 7700) / 7;
 
     if (tujuan === 'menurunkan berat badan') {
@@ -117,7 +120,8 @@ exports.login = async (req, res) => {
         const payload = {
             id: user.id,
             email: user.email,
-            nama: user.nama
+            nama: user.nama,
+            role: user.role || 'user'
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
@@ -129,6 +133,7 @@ exports.login = async (req, res) => {
                 nama: user.nama,
                 email: user.email,
                 target_kalori: user.target_kalori,
+                role: user.role || 'user',
                 avatar: user.avatar ? `http://localhost:5000${user.avatar}` : null
             }
         });

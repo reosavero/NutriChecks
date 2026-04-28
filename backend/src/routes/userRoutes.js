@@ -29,6 +29,7 @@ const upload = multer({
     }
 });
 
-router.post('/user/avatar', authMiddleware, upload.single('avatar'), userController.uploadAvatar);
+router.post('/user/upload-avatar', authMiddleware, upload.single('avatar'), userController.uploadAvatar);
+router.put('/user/profile', authMiddleware, userController.updateProfile);
 
 module.exports = router;

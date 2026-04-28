@@ -8,6 +8,8 @@ import LogFood from './pages/LogFood';
 import FoodMenu from './pages/FoodMenu';
 import Recommendations from './pages/Recommendations';
 import WeightHistory from './pages/WeightHistory';
+import AdminDashboard from './pages/AdminDashboard';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -23,9 +25,12 @@ function App() {
         <Route path="/recommendations" element={<Recommendations />} />
         <Route path="/upload-food" element={<UploadFood />} />
         <Route path="/weight-history" element={<WeightHistory />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
+

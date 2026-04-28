@@ -11,8 +11,11 @@ exports.getDashboardData = async (req, res) => {
     
     const user = users[0];
     
-    // Calculate planning dynamically based on target and speed
-    const kecepatan = parseFloat(user.kecepatan) || 0.5;
+    // Map string kecepatan to float value
+    let kecepatanValue = 0.5; // default normal
+    if (user.kecepatan === 'lambat') kecepatanValue = 0.25;
+    if (user.kecepatan === 'cepat') kecepatanValue = 1.0;
+    const kecepatan = kecepatanValue;
     const isMenurunkan = user.tujuan === 'menurunkan berat badan';
     
     const beratBadan = parseFloat(user.berat_badan) || 0;
@@ -49,10 +52,22 @@ exports.getDashboardData = async (req, res) => {
 
     const responseData = {
       user: {
+        id: user.id,
         nama: user.nama,
         email: user.email,
+        role: user.role,
         status: 'Online',
-        avatar: user.avatar ? `http://localhost:5000${user.avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama)}&background=10b981&color=fff`
+        avatar: user.avatar 
+          ? `http://localhost:5000${user.avatar}` 
+          : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nama.charAt(0))}&background=006c51&color=fff`,
+        // Tambahan data biologis dari database
+        berat_badan: user.berat_badan,
+        tinggi_badan: user.tinggi_badan,
+        usia: user.usia,
+        gender: user.gender,
+        tujuan: user.tujuan,
+        kecepatan: user.kecepatan,
+        target_kalori: user.target_kalori
       },
       planning: {
         goalWeeks: goalWeeks,

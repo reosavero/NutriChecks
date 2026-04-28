@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+
 import ChatBot from '../components/ChatBot';
 
 export default function UploadFood() {
@@ -59,7 +59,7 @@ export default function UploadFood() {
     formData.append('image', imageFile);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/analyze-food', formData, {
+      const response = await axios.post('http://localhost:5000/api/analyze-food', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setAnalysisResult(response.data.data);
@@ -76,7 +76,7 @@ export default function UploadFood() {
       <Sidebar user={user} />
 
       <main className="flex-1 lg:ml-72 flex flex-col min-h-screen overflow-y-auto pb-24 lg:pb-0">
-        <Header user={user} />
+
 
         <div className="flex-1 p-6 md:p-8 max-w-screen-2xl mx-auto w-full space-y-8">
           {/* Page Header */}

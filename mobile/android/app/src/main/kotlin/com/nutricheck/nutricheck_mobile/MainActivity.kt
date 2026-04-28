@@ -1,5 +1,0 @@
-package com.nutricheck.nutricheck_mobile
-
-import io.flutter.embedding.android.FlutterActivity
-
-class MainActivity : FlutterActivity()
